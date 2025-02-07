@@ -2,8 +2,10 @@
 import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Pizza, Coffee, Salad } from "lucide-react";
+import { useCartStore } from "@/store/cartStore";
+import { CartToast } from "@/components/CartToast";
 
 interface MenuItem {
   id: number;
@@ -56,16 +58,19 @@ const menuItems: MenuItem[] = [
 const Menu = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "main" | "dessert" | "drink">("all");
   const { toast } = useToast();
+  const addToCart = useCartStore((state) => state.addItem);
 
   const filteredItems = selectedCategory === "all" 
     ? menuItems 
     : menuItems.filter(item => item.category === selectedCategory);
 
-  const addToCart = (item: MenuItem) => {
-    // TODO: Implement cart functionality
+  const handleAddToCart = (item: MenuItem) => {
+    addToCart(item);
     toast({
       title: "Added to cart",
       description: `${item.name} has been added to your cart`,
+      action: <CartToast />,
+      duration: 5000,
     });
   };
 
@@ -139,7 +144,7 @@ const Menu = () => {
               </CardContent>
               <CardFooter className="flex justify-between items-center">
                 <span className="text-lg font-bold">${item.price.toFixed(2)}</span>
-                <Button onClick={() => addToCart(item)}>Add to Cart</Button>
+                <Button onClick={() => handleAddToCart(item)}>Add to Cart</Button>
               </CardFooter>
             </Card>
           ))}
