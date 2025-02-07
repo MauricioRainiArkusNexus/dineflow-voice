@@ -9,6 +9,7 @@ import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Menu from "./pages/Menu";
 import Checkout from "./pages/Checkout";
+import VoiceTranscription from "./pages/VoiceTranscription";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/login" element={<Login />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/checkout" element={<Checkout />} />
+          <Route path="/voice" element={<VoiceTranscription />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </TooltipProvider>
