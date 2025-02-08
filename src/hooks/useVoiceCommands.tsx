@@ -1,11 +1,10 @@
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useConversation } from '@11labs/react';
 import { useToast } from '@/components/ui/use-toast';
 
 export const useVoiceCommands = () => {
   const [isListening, setIsListening] = useState(false);
-  const [transcript, setTranscript] = useState('');
   const conversation = useConversation();
   const { toast } = useToast();
 
@@ -14,7 +13,6 @@ export const useVoiceCommands = () => {
       await navigator.mediaDevices.getUserMedia({ audio: true });
       setIsListening(true);
       
-      // Initialize voice recognition with ElevenLabs
       await conversation.startSession({
         agentId: 'KzhqQGKZ0aVtYnrtTXkW',
         overrides: {
@@ -39,19 +37,10 @@ export const useVoiceCommands = () => {
     conversation.endSession();
   }, [conversation]);
 
-  useEffect(() => {
-    return () => {
-      if (isListening) {
-        stopListening();
-      }
-    };
-  }, [isListening, stopListening]);
-
   return {
     isListening,
     startListening,
     stopListening,
-    transcript,
     conversation
   };
 };
