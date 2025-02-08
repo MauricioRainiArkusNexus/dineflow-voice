@@ -16,19 +16,12 @@ export const useVoiceCommands = () => {
       
       // Initialize voice recognition with ElevenLabs
       await conversation.startSession({
-        agentId: 'YOUR_AGENT_ID', // You'll need to set up an agent in ElevenLabs
+        agentId: 'KzhqQGKZ0aVtYnrtTXkW',
         overrides: {
           agent: {
-            language: 'en', // Set to English
+            language: 'en',
           },
         },
-      });
-
-      // Handle transcription updates
-      conversation.onMessage((message) => {
-        if (message.type === 'transcript' && message.content) {
-          setTranscript(message.content);
-        }
       });
 
     } catch (error) {
@@ -59,5 +52,6 @@ export const useVoiceCommands = () => {
     startListening,
     stopListening,
     transcript,
+    conversation
   };
 };
