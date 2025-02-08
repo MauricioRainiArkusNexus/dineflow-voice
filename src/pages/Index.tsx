@@ -3,12 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useAuthStore } from '../store/authStore';
 import { Button } from '@/components/ui/button';
-import { useVoiceCommands } from '@/hooks/useVoiceCommands';
+import { AIWaiter } from '@/components/AIWaiter';
 
 const Index = () => {
   const navigate = useNavigate();
   const { token } = useAuthStore();
-  const { startListening, stopListening, isListening } = useVoiceCommands();
 
   useEffect(() => {
     if (!token) {
@@ -18,17 +17,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-fade-in">
+      <AIWaiter />
       <div className="container px-4 py-8">
         <header className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold">Welcome to DineFlow</h1>
-          <Button
-            onClick={() => isListening ? stopListening() : startListening()}
-            className={`p-3 rounded-full transition-all duration-300 ${
-              isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
-            }`}
-          >
-            {isListening ? 'Stop Voice' : 'Start Voice'}
-          </Button>
         </header>
         
         <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
