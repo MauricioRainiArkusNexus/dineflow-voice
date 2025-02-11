@@ -3,9 +3,8 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Mic, MicOff } from 'lucide-react';
-import { Transcript } from '@/types';
-import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
-import { Credentials } from 'aws-amplify/auth';
+import { Transcript, AWSCredentials } from '@/types';
+import { fetchAuthSession } from 'aws-amplify/auth';
 import LiveTranscriptions from '@/components/LiveTranscriptions';
 import awsConfig from '@/config/aws-exports';
 import { useToast } from '@/components/ui/use-toast';
@@ -14,7 +13,7 @@ import { Amplify } from 'aws-amplify';
 Amplify.configure(awsConfig);
 
 const VoiceTranscription = () => {
-  const [currentCredentials, setCurrentCredentials] = useState<Credentials>({
+  const [currentCredentials, setCurrentCredentials] = useState<AWSCredentials>({
     accessKeyId: "",
     secretAccessKey: "",
     sessionToken: "",
@@ -31,7 +30,11 @@ const VoiceTranscription = () => {
     try {
       const { credentials } = await fetchAuthSession();
       if (credentials) {
-        setCurrentCredentials(credentials);
+        setCurrentCredentials({
+          accessKeyId: credentials.accessKeyId,
+          secretAccessKey: credentials.secretAccessKey,
+          sessionToken: credentials.sessionToken,
+        });
       }
     } catch (error) {
       console.error('Error getting credentials:', error);

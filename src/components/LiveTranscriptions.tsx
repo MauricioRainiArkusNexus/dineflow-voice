@@ -4,13 +4,12 @@ import {
     StartStreamTranscriptionCommand,
     LanguageCode
 } from '@aws-sdk/client-transcribe-streaming';
-import { Credentials } from 'aws-amplify/auth';
-import { iterator } from 'p-event';
-
+import pEvent from 'p-event';
 import {
     RecordingProperties,
     MessageDataType,
-    LiveTranscriptionProps
+    LiveTranscriptionProps,
+    AWSCredentials
 } from "../types";
 
 const sampleRate = import.meta.env.VITE_TRANSCRIBE_SAMPLING_RATE;
@@ -23,7 +22,7 @@ const AWS_REGION = import.meta.env.VITE_AWS_REGION;
 
 const startStreaming = async (
     handleTranscribeOutput: (data: string, partial: boolean, transcriptionClient: TranscribeStreamingClient, mediaRecorder: AudioWorkletNode) => void,
-    currentCredentials: Credentials,
+    currentCredentials: AWSCredentials,
 ) => {
     const audioContext = new window.AudioContext();
     let stream: MediaStream;
@@ -73,14 +72,13 @@ const startStreaming = async (
         console.log(`Error receving message from worklet ${error}`);
     };
 
-    const audioDataIterator = iterator<'message', MessageEvent<MessageDataType>>(mediaRecorder.port, 'message');
+    const audioDataIterator = pEvent.iterator<'message', MessageEvent<MessageDataType>>(mediaRecorder.port, 'message');
 
     const getAudioStream = async function* () {
         for await (const chunk of audioDataIterator) {
             if (chunk.data.message === 'SHARE_RECORDING_BUFFER') {
                 const abuffer = pcmEncode(chunk.data.buffer[0]);
                 const audiodata = new Uint8Array(abuffer);
-                // console.log(`processing chunk of size ${audiodata.length}`);
                 yield {
                     AudioEvent: {
                         AudioChunk: audiodata,
@@ -89,6 +87,7 @@ const startStreaming = async (
             }
         }
     };
+
     const transcribeClient = new TranscribeStreamingClient({
         region: AWS_REGION,
         credentials: {
@@ -106,7 +105,6 @@ const startStreaming = async (
     const data = await transcribeClient.send(command);
     console.log('Transcribe sesssion established ', data.SessionId);
 
-
     if (data.TranscriptResultStream) {
         for await (const event of data.TranscriptResultStream) {
             if (event?.TranscriptEvent?.Transcript) {
@@ -116,7 +114,6 @@ const startStreaming = async (
                         for (let i = 0; i < result?.Alternatives[0].Items?.length; i++) {
                             completeSentence += ` ${result?.Alternatives[0].Items[i].Content}`;
                         }
-                        // console.log(`Transcription: ${completeSentence}`);
                         handleTranscribeOutput(
                             completeSentence,
                             result.IsPartial || false,
