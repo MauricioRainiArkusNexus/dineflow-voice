@@ -4,26 +4,63 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Mic, MicOff } from 'lucide-react';
 import { Transcript } from '@/types';
+import { Auth } from 'aws-amplify';
+import { ICredentials } from "@aws-amplify/core";
+import LiveTranscriptions from '@/components/LiveTranscriptions';
+import awsConfig from '@/config/aws-exports';
+import { useToast } from '@/components/ui/use-toast';
+
+Auth.configure(awsConfig);
 
 const VoiceTranscription = () => {
+  const [currentCredentials, setCurrentCredentials] = useState<ICredentials>({
+    accessKeyId: "",
+    authenticated: false,
+    expiration: undefined,
+    identityId: "",
+    secretAccessKey: "",
+    sessionToken: ""
+  });
   const [isListening, setIsListening] = useState(false);
   const [lines, setLines] = useState<Transcript[]>([]);
   const [currentLine, setCurrentLine] = useState<Transcript[]>([]);
   const [mediaRecorder, setMediaRecorder] = useState<AudioWorkletNode>();
   const [transcriptionClient, setTranscriptionClient] = useState<any>(null);
+  const [transcript, setTranscript] = useState<Transcript>();
+  const { toast } = useToast();
+
+  async function getAuth() {
+    try {
+      const currCreds = await Auth.currentUserCredentials();
+      setCurrentCredentials(currCreds);
+    } catch (error) {
+      console.error('Error getting credentials:', error);
+      toast({
+        title: "Authentication Error",
+        description: "Failed to get AWS credentials. Please try logging in again.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  useEffect(() => {
+    getAuth();
+  }, []);
+
+  useEffect(() => {
+    if (transcript) {
+      if (transcript.partial) {
+        setCurrentLine([transcript]);
+      } else {
+        setLines(prev => [...prev, transcript]);
+        setCurrentLine([]);
+      }
+    }
+  }, [transcript]);
 
   const handleTranscribe = () => {
     setIsListening(!isListening);
     console.log(isListening ? "Stopping transcription" : "Starting transcription");
-  };
-
-  const handleTranscript = (transcript: Transcript) => {
-    if (transcript.partial) {
-      setCurrentLine([transcript]);
-    } else {
-      setLines(prev => [...prev, transcript]);
-      setCurrentLine([]);
-    }
   };
 
   return (
@@ -37,6 +74,7 @@ const VoiceTranscription = () => {
               isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
             }`}
             size="lg"
+            disabled={!currentCredentials.authenticated}
           >
             {isListening ? (
               <>
@@ -78,6 +116,16 @@ const VoiceTranscription = () => {
           </div>
         </Card>
       </div>
+
+      <LiveTranscriptions
+        currentCredentials={currentCredentials}
+        mediaRecorder={mediaRecorder}
+        setMediaRecorder={setMediaRecorder}
+        setTranscriptionClient={setTranscriptionClient}
+        transcriptionClient={transcriptionClient}
+        transcribeStatus={isListening}
+        setTranscript={setTranscript}
+      />
     </div>
   );
 };
