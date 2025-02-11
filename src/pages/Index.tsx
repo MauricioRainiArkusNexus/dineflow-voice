@@ -9,11 +9,13 @@ const Index = () => {
   const navigate = useNavigate();
   const { token } = useAuthStore();
 
-  useEffect(() => {
+
+/* TODO: Uncomment when auth process is complete. */
+/*   useEffect(() => {
     if (!token) {
       navigate('/login');
     }
-  }, [token, navigate]);
+  }, [token, navigate]); */
 
   return (
     <div className="min-h-screen bg-background text-foreground animate-fade-in">

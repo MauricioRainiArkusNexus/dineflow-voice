@@ -3,13 +3,12 @@ import { useState } from "react";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
-import { Pizza, Coffee, Salad } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { CartToast } from "@/components/CartToast";
 import { useTheme } from "@/providers/ThemeProvider";
 import { menuItems } from "@/config/themes";
 
-const Menu = () => {
+export const Menu = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "main" | "dessert" | "drink">("all");
   const { toast } = useToast();
   const addToCart = useCartStore((state) => state.addItem);
@@ -58,7 +57,6 @@ const Menu = () => {
           <h1 className="text-4xl font-heading font-bold text-center">{currentTheme.name}</h1>
         </div>
         
-        {/* Category Filter */}
         <div className="flex justify-center gap-4 mb-8">
           <Button
             variant={selectedCategory === "all" ? "default" : "outline"}
@@ -86,7 +84,6 @@ const Menu = () => {
           </Button>
         </div>
 
-        {/* Menu Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredItems.map((item) => (
             <Card key={item.id} className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
@@ -134,5 +131,3 @@ const Menu = () => {
     </div>
   );
 };
-
-export default Menu;
