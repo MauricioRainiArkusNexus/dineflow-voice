@@ -1,23 +1,12 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Mic, MicOff } from 'lucide-react';
-import { Transcript, AWSCredentials } from '@/types';
-import { fetchAuthSession } from 'aws-amplify/auth';
-import LiveTranscriptions from '@/components/LiveTranscriptions';
-import awsConfig from '@/config/aws-exports';
+import { Transcript } from '@/types';
 import { useToast } from '@/components/ui/use-toast';
-import { Amplify } from 'aws-amplify';
-
-Amplify.configure(awsConfig);
 
 const VoiceTranscription = () => {
-  const [currentCredentials, setCurrentCredentials] = useState<AWSCredentials>({
-    accessKeyId: "",
-    secretAccessKey: "",
-    sessionToken: "",
-  });
   const [isListening, setIsListening] = useState(false);
   const [lines, setLines] = useState<Transcript[]>([]);
   const [currentLine, setCurrentLine] = useState<Transcript[]>([]);
@@ -25,41 +14,6 @@ const VoiceTranscription = () => {
   const [transcriptionClient, setTranscriptionClient] = useState<any>(null);
   const [transcript, setTranscript] = useState<Transcript>();
   const { toast } = useToast();
-
-  async function getAuth() {
-    try {
-      const { credentials } = await fetchAuthSession();
-      if (credentials) {
-        setCurrentCredentials({
-          accessKeyId: credentials.accessKeyId,
-          secretAccessKey: credentials.secretAccessKey,
-          sessionToken: credentials.sessionToken,
-        });
-      }
-    } catch (error) {
-      console.error('Error getting credentials:', error);
-      toast({
-        title: "Authentication Error",
-        description: "Failed to get AWS credentials. Please try logging in again.",
-        variant: "destructive",
-      });
-    }
-  }
-
-  useEffect(() => {
-    getAuth();
-  }, []);
-
-  useEffect(() => {
-    if (transcript) {
-      if (transcript.partial) {
-        setCurrentLine([transcript]);
-      } else {
-        setLines(prev => [...prev, transcript]);
-        setCurrentLine([]);
-      }
-    }
-  }, [transcript]);
 
   const handleTranscribe = () => {
     setIsListening(!isListening);
@@ -77,7 +31,6 @@ const VoiceTranscription = () => {
               isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
             }`}
             size="lg"
-            disabled={!currentCredentials.accessKeyId}
           >
             {isListening ? (
               <>
@@ -119,16 +72,6 @@ const VoiceTranscription = () => {
           </div>
         </Card>
       </div>
-
-      <LiveTranscriptions
-        currentCredentials={currentCredentials}
-        mediaRecorder={mediaRecorder}
-        setMediaRecorder={setMediaRecorder}
-        setTranscriptionClient={setTranscriptionClient}
-        transcriptionClient={transcriptionClient}
-        transcribeStatus={isListening}
-        setTranscript={setTranscript}
-      />
     </div>
   );
 };
