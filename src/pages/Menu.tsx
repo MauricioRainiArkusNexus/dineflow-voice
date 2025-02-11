@@ -6,65 +6,23 @@ import { useToast } from "@/hooks/use-toast";
 import { Pizza, Coffee, Salad } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { CartToast } from "@/components/CartToast";
-
-interface MenuItem {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  category: "main" | "dessert" | "drink";
-  preparationTime: string;
-  ingredients: string[];
-  imageUrl: string;
-  icon: JSX.Element;
-}
-
-const menuItems: MenuItem[] = [
-  {
-    id: 1,
-    name: "Margherita Pizza",
-    description: "Fresh tomatoes, mozzarella, basil, and our signature sauce",
-    price: 14.99,
-    category: "main",
-    preparationTime: "15-20 min",
-    ingredients: ["Tomato Sauce", "Fresh Mozzarella", "Basil", "Olive Oil"],
-    imageUrl: "https://images.unsplash.com/photo-1498936178812-4b2e558d2937",
-    icon: <Pizza className="h-6 w-6" />,
-  },
-  {
-    id: 2,
-    name: "Artisan Coffee",
-    description: "Premium blend coffee with a rich, smooth taste",
-    price: 4.99,
-    category: "drink",
-    preparationTime: "5 min",
-    ingredients: ["Premium Coffee Beans", "Filtered Water"],
-    imageUrl: "https://images.unsplash.com/photo-1482938289607-e9573fc25ebb",
-    icon: <Coffee className="h-6 w-6" />,
-  },
-  {
-    id: 3,
-    name: "Garden Fresh Salad",
-    description: "Mixed greens with seasonal vegetables and house dressing",
-    price: 12.99,
-    category: "main",
-    preparationTime: "10 min",
-    ingredients: ["Mixed Greens", "Cherry Tomatoes", "Cucumber", "House Dressing"],
-    imageUrl: "https://images.unsplash.com/photo-1506744038136-46273834b3fb",
-    icon: <Salad className="h-6 w-6" />,
-  },
-];
+import { useTheme } from "@/providers/ThemeProvider";
+import { menuItems } from "@/config/themes";
 
 const Menu = () => {
   const [selectedCategory, setSelectedCategory] = useState<"all" | "main" | "dessert" | "drink">("all");
   const { toast } = useToast();
   const addToCart = useCartStore((state) => state.addItem);
+  const { currentTheme } = useTheme();
+
+  const restaurantType = currentTheme.name.toLowerCase().includes('breakfast') ? 'breakfast' : 'sushi';
+  const items = menuItems[restaurantType];
 
   const filteredItems = selectedCategory === "all" 
-    ? menuItems 
-    : menuItems.filter(item => item.category === selectedCategory);
+    ? items 
+    : items.filter(item => item.category === selectedCategory);
 
-  const handleAddToCart = (item: MenuItem) => {
+  const handleAddToCart = (item: any) => {
     addToCart(item);
     toast({
       title: "Added to cart",
@@ -75,9 +33,30 @@ const Menu = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-6 animate-fade-in">
+    <div 
+      className="min-h-screen bg-background p-6 animate-fade-in"
+      style={{
+        '--primary': currentTheme.colors.primary,
+        '--secondary': currentTheme.colors.secondary,
+        '--accent': currentTheme.colors.accent,
+        '--background': currentTheme.colors.background,
+        '--foreground': currentTheme.colors.foreground,
+        '--card': currentTheme.colors.card,
+        '--card-foreground': currentTheme.colors.cardForeground,
+        '--border': currentTheme.colors.border,
+        '--font-heading': currentTheme.font.heading,
+        '--font-body': currentTheme.font.body,
+      } as React.CSSProperties}
+    >
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold text-center mb-8">Our Menu</h1>
+        <div className="flex items-center justify-between mb-8">
+          <img 
+            src={currentTheme.logo} 
+            alt={currentTheme.name}
+            className="h-16 object-contain"
+          />
+          <h1 className="text-4xl font-heading font-bold text-center">{currentTheme.name}</h1>
+        </div>
         
         {/* Category Filter */}
         <div className="flex justify-center gap-4 mb-8">
@@ -121,20 +100,20 @@ const Menu = () => {
               <CardHeader>
                 <div className="flex items-center gap-2">
                   {item.icon}
-                  <CardTitle>{item.name}</CardTitle>
+                  <CardTitle className="font-heading">{item.name}</CardTitle>
                 </div>
-                <CardDescription>{item.description}</CardDescription>
+                <CardDescription className="font-body">{item.description}</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-2">
-                  <p className="text-sm text-muted-foreground">
+                  <p className="text-sm text-muted-foreground font-body">
                     Preparation time: {item.preparationTime}
                   </p>
                   <div className="flex flex-wrap gap-2">
                     {item.ingredients.map((ingredient, index) => (
                       <span
                         key={index}
-                        className="text-xs bg-secondary px-2 py-1 rounded-full"
+                        className="text-xs bg-secondary/10 px-2 py-1 rounded-full font-body"
                       >
                         {ingredient}
                       </span>
@@ -143,8 +122,10 @@ const Menu = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-between items-center">
-                <span className="text-lg font-bold">${item.price.toFixed(2)}</span>
-                <Button onClick={() => handleAddToCart(item)}>Add to Cart</Button>
+                <span className="text-lg font-bold font-heading">${item.price.toFixed(2)}</span>
+                <Button onClick={() => handleAddToCart(item)} className="font-body">
+                  Add to Cart
+                </Button>
               </CardFooter>
             </Card>
           ))}
