@@ -1,6 +1,6 @@
 
 import { TranscribeStreamingClient } from '@aws-sdk/client-transcribe-streaming';
-import { ICredentials } from "@aws-amplify/core";
+import { Credentials } from 'aws-amplify/auth';
 
 export interface Transcript {
   channel: string;
@@ -23,7 +23,7 @@ export interface LiveTranscriptionProps {
   transcribeStatus: boolean;
   mediaRecorder: AudioWorkletNode | undefined;
   transcriptionClient: any;
-  currentCredentials: ICredentials;
+  currentCredentials: Credentials;
   setMediaRecorder: React.Dispatch<React.SetStateAction<AudioWorkletNode | undefined>>;
   setTranscriptionClient: React.Dispatch<React.SetStateAction<any>>;
   setTranscript: React.Dispatch<React.SetStateAction<Transcript | undefined>>;

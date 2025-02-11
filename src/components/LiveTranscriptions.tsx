@@ -1,19 +1,17 @@
 import { useEffect } from "react";
-
 import {
     TranscribeStreamingClient,
     StartStreamTranscriptionCommand,
     LanguageCode
 } from '@aws-sdk/client-transcribe-streaming';
-import { ICredentials } from "@aws-amplify/core";
-import pEvent from 'p-event';
+import { Credentials } from 'aws-amplify/auth';
+import { iterator } from 'p-event';
 
 import {
     RecordingProperties,
     MessageDataType,
     LiveTranscriptionProps
 } from "../types";
-
 
 const sampleRate = import.meta.env.VITE_TRANSCRIBE_SAMPLING_RATE;
 const language = import.meta.env.VITE_TRANSCRIBE_LANGUAGE_CODE as LanguageCode;
@@ -23,12 +21,10 @@ const AWS_ACCESS_KEY_ID = import.meta.env.VITE_AWS_ACCESS_KEY_ID;
 const AWS_SECRET_ACCESS_KEY = import.meta.env.VITE_AWS_SECRET_ACCESS_KEY;
 const AWS_REGION = import.meta.env.VITE_AWS_REGION;
 
-
 const startStreaming = async (
     handleTranscribeOutput: (data: string, partial: boolean, transcriptionClient: TranscribeStreamingClient, mediaRecorder: AudioWorkletNode) => void,
-    currentCredentials: ICredentials,
+    currentCredentials: Credentials,
 ) => {
-
     const audioContext = new window.AudioContext();
     let stream: MediaStream;
 
@@ -77,7 +73,7 @@ const startStreaming = async (
         console.log(`Error receving message from worklet ${error}`);
     };
 
-    const audioDataIterator = pEvent.iterator<'message', MessageEvent<MessageDataType>>(mediaRecorder.port, 'message');
+    const audioDataIterator = iterator<'message', MessageEvent<MessageDataType>>(mediaRecorder.port, 'message');
 
     const getAudioStream = async function* () {
         for await (const chunk of audioDataIterator) {
@@ -133,7 +129,6 @@ const startStreaming = async (
         }
     }
 };
-
 
 const stopStreaming = async (
     mediaRecorder: AudioWorkletNode,

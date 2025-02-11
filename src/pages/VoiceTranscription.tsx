@@ -4,22 +4,20 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Mic, MicOff } from 'lucide-react';
 import { Transcript } from '@/types';
-import { Auth } from 'aws-amplify';
-import { ICredentials } from "@aws-amplify/core";
+import { getCurrentUser, fetchAuthSession } from 'aws-amplify/auth';
+import { Credentials } from 'aws-amplify/auth';
 import LiveTranscriptions from '@/components/LiveTranscriptions';
 import awsConfig from '@/config/aws-exports';
 import { useToast } from '@/components/ui/use-toast';
+import { Amplify } from 'aws-amplify';
 
-Auth.configure(awsConfig);
+Amplify.configure(awsConfig);
 
 const VoiceTranscription = () => {
-  const [currentCredentials, setCurrentCredentials] = useState<ICredentials>({
+  const [currentCredentials, setCurrentCredentials] = useState<Credentials>({
     accessKeyId: "",
-    authenticated: false,
-    expiration: undefined,
-    identityId: "",
     secretAccessKey: "",
-    sessionToken: ""
+    sessionToken: "",
   });
   const [isListening, setIsListening] = useState(false);
   const [lines, setLines] = useState<Transcript[]>([]);
@@ -31,8 +29,10 @@ const VoiceTranscription = () => {
 
   async function getAuth() {
     try {
-      const currCreds = await Auth.currentUserCredentials();
-      setCurrentCredentials(currCreds);
+      const { credentials } = await fetchAuthSession();
+      if (credentials) {
+        setCurrentCredentials(credentials);
+      }
     } catch (error) {
       console.error('Error getting credentials:', error);
       toast({
@@ -74,7 +74,7 @@ const VoiceTranscription = () => {
               isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-primary hover:bg-primary/90'
             }`}
             size="lg"
-            disabled={!currentCredentials.authenticated}
+            disabled={!currentCredentials.accessKeyId}
           >
             {isListening ? (
               <>
